@@ -32,6 +32,7 @@
       justify-content: center;
       background-color: lightgreen;
       gap: 1em;
+      flex-wrap: wrap;
     }
     .button {
       padding: 1em;
@@ -58,6 +59,7 @@
       padding: 1em;
       flex-wrap: wrap;
       gap: 1em;
+      position: relative;
     }
     main.inputSection .block {
       width: 300px;
@@ -92,10 +94,13 @@
       font-size: 0.9em;
       color: white;
     }
+
     main.levensthein {
       display: flex;
       justify-content: center;
       align-items: center;
+      padding-bottom: 4em;
+      position: relative;
     }
     main.levensthein table {
       border-spacing: 0em;
@@ -117,6 +122,28 @@
       font-weight: bold;
       background-color: rgb(77, 77, 77);
       color: white;
+    }
+    main.levensthein .additional_options {
+      position: absolute;
+      bottom: 3px;
+      left: 0;
+      width: 100%;
+      padding: 0.5em;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 1em;
+    }
+    main.levensthein .additional_options div {
+      padding: 0.5em;
+      font-size: 0.8em;
+      cursor: pointer;
+    }
+    main.levensthein .additional_options div:hover {
+      transition: background-color;
+      transition-duration: 0.5s;
+      background-color: rgb(163, 163, 163);
+      transition-timing-function: ease-in-out;
     }
   </style>
 </head>
@@ -280,7 +307,9 @@
           MAIN.appendChild(elem)
         });
       }
+    
       MAIN.querySelector('.block.add').addEventListener('click', () => {
+        saveToLocalStorage();
         let elem = document.createElement('div');
         elem.classList = ['block'];
         elem.innerHTML = `
@@ -337,8 +366,24 @@
         </tr>
         ${matrixHTML}
         </table>
+        <div class="additional_options">
+          <div id="copy_to_clipboard_1">Copy To Clipboard</div>
+        </div>
       `;
       
+      document.getElementById('copy_to_clipboard_1').addEventListener('click', () => {
+        let copy = "";
+
+        console.log([''].concat(input.map(el=>el.name)))
+        copy += [''].concat(input.map(el=>el.name)).join('	') + '\n'
+
+        for (let i = 0; i < input.length; i++) {
+          copy += input[i].name + '	' + matrix[i].join('	') + '\n'
+        }
+        copy = copy.substring(0, copy.length-1)
+
+        navigator.clipboard.writeText(copy);
+      });
     })
     LevenshteinNormalizedDistanceSection.addEventListener('click', () => {
       saveToLocalStorage();
@@ -377,7 +422,25 @@
         </tr>
         ${matrixHTML}
         </table>
+        <div class="additional_options">
+          <div id="copy_to_clipboard_1">Copy To Clipboard</div>
+        </div>
       `;
+      
+      document.getElementById('copy_to_clipboard_1').addEventListener('click', () => {
+        let copy = "";
+
+        console.log([''].concat(input.map(el=>el.name)))
+        copy += [''].concat(input.map(el=>el.name)).join('	') + '\n'
+
+        for (let i = 0; i < input.length; i++) {
+          copy += input[i].name + '	' + matrix[i].join('	') + '\n'
+        }
+        copy = copy.substring(0, copy.length-1)
+
+        navigator.clipboard.writeText(copy);
+      });
+    
       
     })
 
