@@ -18,7 +18,7 @@
     * {
       box-sizing: border-box;
     }
-    nav {
+    header {
       width: 100%;
       background-color: lightseagreen;
       padding: 2em;
@@ -27,7 +27,7 @@
       align-items: center;
       justify-content: center;
     }
-    nav h1 {
+    header h1 {
       margin: 0;
       font-size: 3em;
       text-align: center;
@@ -45,7 +45,8 @@
     button {
       width: 100%;
       height: 50%;
-      font-size: 3em;
+      font-size: 4em;
+      font-weight: bold;
       background-color: lightgreen;
       padding: 0.5em 3em 0.5em 3em;
       border: none;
@@ -58,6 +59,7 @@
       background-color: lightcoral;
     }
     footer {
+      padding-top: 1em;
       width: 100%;
       height: 10%;
       text-align: center;
@@ -70,9 +72,9 @@
   </style>
 </head>
 <body>
-  <nav><h1>Levenshtein Matrix Distance Comparison</h1></nav>
+  <header><h1>Levenshtein Matrix Distance Comparison</h1></header>
   <div id="content_">
-    <button>START</button>
+    <a href="calculator.html"><button>START</button></a>
     <section><h3>This website creates a matrix of comparisons between given fragments using Levenshtein methods. Usefull for linguistic analysis.</h3></section>
     <footer>
       Have fun.

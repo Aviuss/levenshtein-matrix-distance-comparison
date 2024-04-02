@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Levenshtein Matrix Distance Comparison</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: lightcyan;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    header {
+      width: 100%;
+      background-color: lightseagreen;
+      padding: 1em;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2em;
+      text-align: center;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: lightgreen;
+      gap: 1em;
+    }
+    .button {
+      padding: 1em;
+      cursor: pointer;
+      display: inline-block;
+      transition: background-color;
+      transition-duration: 0.2s;
+      transition-timing-function: ease-in-out;
+    }
+    .button:hover {
+      background-color: lightcoral;
+    }
+    main {
+      margin: auto;
+      margin-top: 1em;
+      width: min(1000px, 100%);
+      min-height: 500px;
+      background-color: rgb(231, 231, 231);
+      border-radius: 0.1em;
+    }
+    main.inputSection {
+      display: flex;
+      flex-direction: row;
+      padding: 1em;
+      flex-wrap: wrap;
+      gap: 1em;
+    }
+    main.inputSection .block {
+      width: 300px;
+      height: 300px;
+      background-color: gray;
+      color: white;
+      padding: 0.5em;
+      position: relative;
+    }
+    main.inputSection .block.add {
+      cursor: pointer;
+    }
+    main.inputSection .block.add:hover {
+      transition: background-color;
+      transition-duration: 0.5s;
+      background-color: rgb(163, 163, 163);
+      transition-timing-function: ease-in-out;
+    }
+    main.inputSection .block .delete {
+      background-color: lightcoral;
+      padding: 0.2em;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+    main.inputSection .block .charlen {
+      position: absolute;
+      bottom: 3px;
+      left: 3px;
+      font-size: 0.9em;
+      color: white;
+    }
+    main.levensthein {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    main.levensthein table {
+      border-spacing: 0em;
+    }
+    main.levensthein td,
+    main.levensthein th {
+      padding: 1em;
+      text-align: center;
+      border: 1px solid black;
+      border-radius: 0em;
+    }
+    main.levensthein tr:nth-child(odd) {
+      background-color: transparent;
+    }
+    main.levensthein tr:nth-child(even) {
+      background-color: white;
+    }
+    main.levensthein .name {
+      font-weight: bold;
+      background-color: rgb(77, 77, 77);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header><h1>Levenshtein Matrix Distance Comparison</h1></header>
+  <nav>
+    <div id="InputSection" class="button">Input</div>
+    <div id="LevenshteinDistanceSection" class="button">Levenshtein Distance</div>
+    <div id="LevenshteinNormalizedDistanceSection" class="button">Levenshtein Normalized Distance</div>
+  </nav>
+  <main>
+  </main>
+
+  <script>
+    function _min(d0, d1, d2, bx, ay)
+    {
+      return d0 < d1 || d2 < d1
+          ? d0 > d2
+              ? d2 + 1
+              : d0 + 1
+          : bx === ay
+              ? d1
+              : d1 + 1;
+    }
+
+    function levenshteinDistance(a, b)
+    {
+      if (a === b) {
+        return 0;
+      }
+
+      if (a.length > b.length) {
+        var tmp = a;
+        a = b;
+        b = tmp;
+      }
+
+      var la = a.length;
+      var lb = b.length;
+
+      while (la > 0 && (a.charCodeAt(la - 1) === b.charCodeAt(lb - 1))) {
+        la--;
+        lb--;
+      }
+
+      var offset = 0;
+
+      while (offset < la && (a.charCodeAt(offset) === b.charCodeAt(offset))) {
+        offset++;
+      }
+
+      la -= offset;
+      lb -= offset;
+
+      if (la === 0 || lb < 3) {
+        return lb;
+      }
+
+      var x = 0;
+      var y;
+      var d0;
+      var d1;
+      var d2;
+      var d3;
+      var dd;
+      var dy;
+      var ay;
+      var bx0;
+      var bx1;
+      var bx2;
+      var bx3;
+
+      var vector = [];
+
+      for (y = 0; y < la; y++) {
+        vector.push(y + 1);
+        vector.push(a.charCodeAt(offset + y));
+      }
+
+      var len = vector.length - 1;
+
+      for (; x < lb - 3;) {
+        bx0 = b.charCodeAt(offset + (d0 = x));
+        bx1 = b.charCodeAt(offset + (d1 = x + 1));
+        bx2 = b.charCodeAt(offset + (d2 = x + 2));
+        bx3 = b.charCodeAt(offset + (d3 = x + 3));
+        dd = (x += 4);
+        for (y = 0; y < len; y += 2) {
+          dy = vector[y];
+          ay = vector[y + 1];
+          d0 = _min(dy, d0, d1, bx0, ay);
+          d1 = _min(d0, d1, d2, bx1, ay);
+          d2 = _min(d1, d2, d3, bx2, ay);
+          dd = _min(d2, d3, dd, bx3, ay);
+          vector[y] = dd;
+          d3 = d2;
+          d2 = d1;
+          d1 = d0;
+          d0 = dy;
+        }
+      }
+
+      for (; x < lb;) {
+        bx0 = b.charCodeAt(offset + (d0 = x));
+        dd = ++x;
+        for (y = 0; y < len; y += 2) {
+          dy = vector[y];
+          vector[y] = dd = _min(dy, d0, dd, bx0, vector[y + 1]);
+          d0 = dy;
+        }
+      }
+
+      return dd;
+    };
+  </script>
+  <script>
+    function saveToLocalStorage() {
+      if (!document.querySelector('main').classList.contains('inputSection')) { return }
+      input = Array.from(document.querySelectorAll('main .block'))
+        .filter(el=>!el.classList.contains('add'))
+        .map(el => {
+          return {
+            "name": el.querySelector('input').value,
+            "fragment": el.querySelector('textarea').value
+          }
+        });
+      localStorage.setItem('input', JSON.stringify(input));
+    }
+  </script>
+
+  <script>
+    const MAIN = document.querySelector('main');
+    const InputSection = document.getElementById('InputSection');
+    const LevenshteinDistanceSection = document.getElementById('LevenshteinDistanceSection');
+    const LevenshteinNormalizedDistanceSection = document.getElementById('LevenshteinNormalizedDistanceSection');
+    
+    InputSection.addEventListener('click', () => {
+      MAIN.classList = ['inputSection'];
+      MAIN.innerHTML = `
+        <div class="block add">Add new element</div>
+      `;
+      if (localStorage.getItem('input')) {
+        JSON.parse(localStorage.getItem('input')).forEach(element => {
+          let elem = document.createElement('div');
+          elem.classList = ['block'];
+          elem.innerHTML = `
+            <div class="delete">X</div>
+            <input type="text" placeholder="name" style="margin-bottom: 1em;">
+            <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="Text1" cols="30" rows="15"></textarea>
+            <div class="charlen">0 characters</div>
+          `;
+          elem.querySelector('.delete').addEventListener('click', () => {
+            elem.outerHTML = '';
+          })
+          elem.querySelector('textarea').addEventListener('change', () => {
+            elem.querySelector('.charlen').innerHTML = `${elem.querySelector('textarea').value.length} characters`;
+          })
+          elem.querySelector('input').value = element.name;
+          elem.querySelector('textarea').value = element.fragment;
+          elem.querySelector('.charlen').innerHTML = `${element.fragment.length} characters`;
+          MAIN.appendChild(elem)
+        });
+      }
+      MAIN.querySelector('.block.add').addEventListener('click', () => {
+        let elem = document.createElement('div');
+        elem.classList = ['block'];
+        elem.innerHTML = `
+          <div class="delete">X</div>
+          <input type="text" placeholder="name" style="margin-bottom: 1em;">
+          <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="Text1" cols="30" rows="15"></textarea>
+          <div class="charlen">0 characters</div>
+        `;
+        elem.querySelector('.delete').addEventListener('click', () => {
+          elem.outerHTML = '';
+        })
+        elem.querySelector('textarea').addEventListener('change', () => {
+          elem.querySelector('.charlen').innerHTML = `${elem.querySelector('textarea').value.length} characters`;
+        })
+        MAIN.appendChild(elem)
+      })
+    })
+    InputSection.click();
+
+    LevenshteinDistanceSection.addEventListener('click', () => {
+      saveToLocalStorage();
+      if (!localStorage.getItem('input') || localStorage.getItem('input').length === 0) { return }
+
+      let input = JSON.parse(localStorage.getItem('input'));
+
+      let matrix = [];
+      for (let i = 0; i < input.length; i++) {
+        matrix.push(new Array(input.length).fill(0));
+      }
+
+      console.log(input.length)
+      for (let i = 0; i < input.length; i++) {
+        for (let j = i+1; j < input.length; j++) {
+          const distance = levenshteinDistance(input[i].fragment, input[j].fragment);
+          matrix[i][j] = distance;
+          matrix[j][i] = distance;
+        } 
+      }
+
+      
+      console.table(matrix)
+
+      let matrixHTML = '';
+      for (let i = 0; i < input.length; i++) {
+        matrixHTML += '<tr>' + '<td class="name">'+ input[i].name +'</td>' +matrix[i].map(el=>`<td>${el}</td>`).join('') + '</tr>'
+      }
+
+      MAIN.classList = ['levensthein'];
+      MAIN.innerHTML = `
+      <table>
+        <tr>
+          <th style="background-color: red !important; opacity: 0;"></th>
+          ${input.map(el=>`<th class="name">${el.name}</th>`).join('')}
+        </tr>
+        ${matrixHTML}
+        </table>
+      `;
+      
+    })
+    LevenshteinNormalizedDistanceSection.addEventListener('click', () => {
+      saveToLocalStorage();
+      if (!localStorage.getItem('input') || localStorage.getItem('input').length === 0) { return }
+
+      let input = JSON.parse(localStorage.getItem('input'));
+
+      let matrix = [];
+      for (let i = 0; i < input.length; i++) {
+        matrix.push(new Array(input.length).fill(0));
+      }
+
+      console.log(input.length)
+      for (let i = 0; i < input.length; i++) {
+        for (let j = i+1; j < input.length; j++) {
+          const distance = levenshteinDistance(input[i].fragment, input[j].fragment) / Math.max(input[i].fragment.length, input[j].fragment.length);
+          matrix[i][j] = distance;
+          matrix[j][i] = distance;
+        } 
+      }
+
+      
+      console.table(matrix)
+
+      let matrixHTML = '';
+      for (let i = 0; i < input.length; i++) {
+        matrixHTML += '<tr>' + '<td class="name">'+ input[i].name +'</td>' +matrix[i].map(el=>`<td>${Math.round(el*1000)/1000}</td>`).join('') + '</tr>'
+      }
+
+      MAIN.classList = ['levensthein'];
+      MAIN.innerHTML = `
+      <table>
+        <tr>
+          <th style="background-color: red !important; opacity: 0;"></th>
+          ${input.map(el=>`<th class="name">${el.name}</th>`).join('')}
+        </tr>
+        ${matrixHTML}
+        </table>
+      `;
+      
+    })
+
+  </script>
+<body>
+</html>
