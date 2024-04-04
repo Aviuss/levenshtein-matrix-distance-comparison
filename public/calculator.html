@@ -153,6 +153,7 @@
     <div id="InputSection" class="button">Input</div>
     <div id="LevenshteinDistanceSection" class="button">Levenshtein Distance</div>
     <div id="LevenshteinNormalizedDistanceSection" class="button">Levenshtein Normalized Distance</div>
+    <div id="DamerauLevenshteinNormalizedDistanceSection" class="button">Damerau-Levenshtein Normalized Distance</div>
   </nav>
   <main>
   </main>
@@ -273,13 +274,78 @@
       localStorage.setItem('input', JSON.stringify(input));
     }
   </script>
+  <script>
+    
+const initMatrix = (s1, s2) => {
+  /* istanbul ignore next */
+  if (undefined == s1 || undefined == s2) {
+    return null;
+  }
+
+  let d = [];
+  for (let i = 0; i <= s1.length; i++) {
+    d[i] = [];
+    d[i][0] = i;
+  }
+  for (let j = 0; j <= s2.length; j++) {
+    d[0][j] = j;
+  }
+
+  return d;
+};
+
+const damerau = (i, j, s1, s2, d, cost) => {
+  if (i > 1 && j > 1 && s1[i - 1] === s2[j - 2] && s1[i - 2] === s2[j - 1]) {
+    d[i][j] = Math.min.apply(null, [d[i][j], d[i - 2][j - 2] + cost]);
+  }
+};
+
+const distanceLevenstheinDamerau = (s1, s2) => {
+  if (
+    undefined == s1 ||
+    undefined == s2 ||
+    "string" !== typeof s1 ||
+    "string" !== typeof s2
+  ) {
+    return -1;
+  }
+
+  let d = initMatrix(s1, s2);
+  /* istanbul ignore next */
+  if (null === d) {
+    return -1;
+  }
+  for (var i = 1; i <= s1.length; i++) {
+    let cost;
+    for (let j = 1; j <= s2.length; j++) {
+      if (s1.charAt(i - 1) === s2.charAt(j - 1)) {
+        cost = 0;
+      } else {
+        cost = 1;
+      }
+
+      d[i][j] = Math.min.apply(null, [
+        d[i - 1][j] + 1,
+        d[i][j - 1] + 1,
+        d[i - 1][j - 1] + cost,
+      ]);
+
+      damerau(i, j, s1, s2, d, cost);
+    }
+  }
+
+  return d[s1.length][s2.length];
+};
+  </script>
 
   <script>
     const MAIN = document.querySelector('main');
     const InputSection = document.getElementById('InputSection');
     const LevenshteinDistanceSection = document.getElementById('LevenshteinDistanceSection');
     const LevenshteinNormalizedDistanceSection = document.getElementById('LevenshteinNormalizedDistanceSection');
+    const DamerauLevenshteinNormalizedDistanceSection = document.getElementById('DamerauLevenshteinNormalizedDistanceSection');
     
+
     InputSection.addEventListener('click', () => {
       MAIN.classList = ['inputSection'];
       MAIN.innerHTML = `
@@ -400,6 +466,64 @@
       for (let i = 0; i < input.length; i++) {
         for (let j = i+1; j < input.length; j++) {
           const distance = levenshteinDistance(input[i].fragment, input[j].fragment) / Math.max(input[i].fragment.length, input[j].fragment.length);
+          matrix[i][j] = distance;
+          matrix[j][i] = distance;
+        } 
+      }
+
+      
+      console.table(matrix)
+
+      let matrixHTML = '';
+      for (let i = 0; i < input.length; i++) {
+        matrixHTML += '<tr>' + '<td class="name">'+ input[i].name +'</td>' +matrix[i].map(el=>`<td>${Math.round(el*1000)/1000}</td>`).join('') + '</tr>'
+      }
+
+      MAIN.classList = ['levensthein'];
+      MAIN.innerHTML = `
+      <table>
+        <tr>
+          <th style="background-color: red !important; opacity: 0;"></th>
+          ${input.map(el=>`<th class="name">${el.name}</th>`).join('')}
+        </tr>
+        ${matrixHTML}
+        </table>
+        <div class="additional_options">
+          <div id="copy_to_clipboard_1">Copy To Clipboard</div>
+        </div>
+      `;
+      
+      document.getElementById('copy_to_clipboard_1').addEventListener('click', () => {
+        let copy = "";
+
+        console.log([''].concat(input.map(el=>el.name)))
+        copy += [''].concat(input.map(el=>el.name)).join('	') + '\n'
+
+        for (let i = 0; i < input.length; i++) {
+          copy += input[i].name + '	' + matrix[i].join('	') + '\n'
+        }
+        copy = copy.substring(0, copy.length-1)
+
+        navigator.clipboard.writeText(copy);
+      });
+    
+      
+    })
+    DamerauLevenshteinNormalizedDistanceSection.addEventListener('click', () => {
+      saveToLocalStorage();
+      if (!localStorage.getItem('input') || localStorage.getItem('input').length === 0) { return }
+
+      let input = JSON.parse(localStorage.getItem('input'));
+
+      let matrix = [];
+      for (let i = 0; i < input.length; i++) {
+        matrix.push(new Array(input.length).fill(0));
+      }
+
+      console.log(input.length)
+      for (let i = 0; i < input.length; i++) {
+        for (let j = i+1; j < input.length; j++) {
+          const distance = distanceLevenstheinDamerau(input[i].fragment, input[j].fragment) / Math.max(input[i].fragment.length, input[j].fragment.length);
           matrix[i][j] = distance;
           matrix[j][i] = distance;
         } 
